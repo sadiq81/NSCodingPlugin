@@ -1,95 +1,84 @@
 package dk.eazyit.appcode.nscoding;
 
-import com.intellij.codeInsight.intention.IntentionAction;
-import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.swift.psi.SwiftClassDeclaration;
 import com.jetbrains.swift.psi.SwiftTypeInheritanceClause;
-import com.jetbrains.swift.psi.impl.types.SwiftReferenceClassTypeImpl;
+import com.jetbrains.swift.psi.SwiftVariableDeclaration;
 import com.jetbrains.swift.psi.types.SwiftType;
-import org.antlr.v4.runtime.misc.NotNull;
-import org.jetbrains.annotations.Nls;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static com.jetbrains.swift.psi.SwiftDeclarationKind.classDeclaration;
 
 public class NSCodingGenerationAction extends AnAction {
 
-    @Override
-    public void actionPerformed(AnActionEvent e) {
+    private static final String TO_STRING_TITLE = "Select fields for NSCoding";
+    private static final String TO_STRING_LABEL_TEXT = "Fields to include in NSCoding:";
 
+    @Override
+    public void actionPerformed(AnActionEvent anActionEvent) {
+        PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
+        if (psiFile == null) { return; }
+
+        SwiftClassDeclaration classDeclaration = PsiTreeUtil.getChildOfAnyType(psiFile, SwiftClassDeclaration.class);
+        if (classDeclaration == null) { return; }
+
+        SelectMembersDialog dlg = new SelectMembersDialog(classDeclaration, TO_STRING_TITLE, TO_STRING_LABEL_TEXT);
+        dlg.show();
+        if (dlg.isOK()) {
+            System.out.println("TEST");
+        }
     }
 
     public void update(AnActionEvent anActionEvent) {
 
-        Boolean enabled = false;
-        SwiftClassDeclaration classDeclaration = PsiTreeUtil.getParentOfType(psiElement, SwiftClassDeclaration.class);
-        if (classDeclaration == null) {
-            return false;
-        }
+        anActionEvent.getPresentation().setEnabledAndVisible(false);
+
+        PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
+        if (psiFile == null) { return; }
+
+        SwiftClassDeclaration classDeclaration = PsiTreeUtil.getChildOfAnyType(psiFile, SwiftClassDeclaration.class);
+        if (classDeclaration == null) { return; }
+
         SwiftTypeInheritanceClause inheritanceClause = classDeclaration.getTypeInheritanceClause();
-        if (inheritanceClause == null) {
-            return false;
-        }
+        if (inheritanceClause == null) { return; }
+
         List<SwiftType> types = inheritanceClause.getTypes();
-        if (types.size() == 0) {
-            return false;
-        }
+        if (types.size() == 0) { return; }
+
         Optional<SwiftType> nscoding = types.stream().filter(type -> type.getPresentableText().equals("NSCoding")).findFirst();
+        if (!nscoding.isPresent()) { return; }
 
-        return nscoding.isPresent();
-
-        final Project project = anActionEvent.getData(CommonDataKeys.PROJECT);
-        if (project == null)
-            return;
-        Object navigatable = anActionEvent.getData(CommonDataKeys.NAVIGATABLE);
-        anActionEvent.getPresentation().setEnabledAndVisible(navigatable != null);
+        anActionEvent.getPresentation().setEnabledAndVisible(true);
     }
 
+    public void generateInitializer(PsiFile psiFile, final List<SwiftVariableDeclaration> fields) {
 
-    //    @Override
-//    public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {
-//        SwiftClassDeclaration classDeclaration = PsiTreeUtil.getParentOfType(psiElement, SwiftClassDeclaration.class);
-//        if (classDeclaration == null) {
-//            return false;
-//        }
-//        SwiftTypeInheritanceClause inheritanceClause = classDeclaration.getTypeInheritanceClause();
-//        if (inheritanceClause == null) {
-//            return false;
-//        }
-//        List<SwiftType> types = inheritanceClause.getTypes();
-//        if (types.size() == 0) {
-//            return false;
-//        }
-//        Optional<SwiftType> nscoding = types.stream().filter(type -> type.getPresentableText().equals("NSCoding")).findFirst();
+        new WriteCommandAction.Simple(psiFile.getProject(), psiFile.getContainingFile()) {
+
+            @Override
+            protected void run() throws Throwable {
+//                PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiClass.getProject());
+//                final JavaCodeStyleManager javaCodeStyleManager = JavaCodeStyleManager.getInstance(psiClass.getProject());
 //
-//        return nscoding.isPresent();
-//    }
+//                final String equalsMethodAsString = equalsBuilder.generateEqualsMethod(psiClass, fields);
+//                PsiMethod equalsMethod = elementFactory.createMethodFromText(equalsMethodAsString, psiClass);
+//                PsiElement equalsElement = psiClass.add(equalsMethod);
+//                javaCodeStyleManager.shortenClassReferences(equalsElement);
 //
-//    @Override
-//    public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) throws IncorrectOperationException {
-//    }
-//
-//    @Nls
-//    @NotNull
-//    @Override
-//    public String getFamilyName() {
-//        return getText();
-//    }
-//
-//    @NotNull
-//    @Override
-//    public String getText() {
-//        return "NSCoding";
-//    }
+//                final String hashCodeMethodAsString = hashCodeBuilder.generateHashCodeMethod(psiClass, fields);
+//                PsiMethod hashCodeMethod = elementFactory.createMethodFromText(hashCodeMethodAsString, psiClass);
+//                PsiElement hashCodeElement = psiClass.add(hashCodeMethod);
+//                javaCodeStyleManager.shortenClassReferences(hashCodeElement);
+
+            }
+
+        }.execute();
+    }
+
 }

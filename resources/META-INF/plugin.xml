@@ -23,9 +23,11 @@
     <actions>
         <!-- Add your actions here -->
         <action id="dk.eazyit.appcode.nscoding.NSCodingGenerationAction"
-                class="dk.eazyit.appcode.nscoding.NSCodingGenerationAction" text="NSCoding"
+                class="dk.eazyit.appcode.nscoding.NSCodingGenerationAction"
+                text="Init and Decoder"
                 description="Generates NSCoding initializer and encoder">
             <add-to-group group-id="CodeMenu" anchor="first"/>
+            <add-to-group group-id="GenerateGroup" anchor="after" relative-to-action="ImplementMethods"/>
         </action>
     </actions>
 
