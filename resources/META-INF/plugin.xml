@@ -1,0 +1,32 @@
+<idea-plugin>
+    <id>dk.eazyit.appcode.nscoding</id>
+    <name>NSCodingPlugin</name>
+    <version>1.0</version>
+    <vendor email="tommy@eazyit.dk" url="http://www.eazyit.dk">Eazy IT</vendor>
+
+    <description><![CDATA[
+      Plugin to make swift classes NSCoding complient<br>
+    ]]></description>
+
+    <change-notes><![CDATA[
+
+    ]]>
+    </change-notes>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="OC-171.4694.27"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html on how to target different products -->
+    <!-- 1. Must be used with AppCode -->
+    <depends>com.intellij.modules.appcode</depends>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="dk.eazyit.appcode.nscoding.NSCodingGenerationAction"
+                class="dk.eazyit.appcode.nscoding.NSCodingGenerationAction" text="NSCoding"
+                description="Generates NSCoding initializer and encoder">
+            <add-to-group group-id="CodeMenu" anchor="first"/>
+        </action>
+    </actions>
+
+</idea-plugin>
